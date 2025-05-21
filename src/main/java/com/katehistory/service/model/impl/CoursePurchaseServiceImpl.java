@@ -1,8 +1,9 @@
-package com.katehistory.service.model;
+package com.katehistory.service.model.impl;
 
 import com.katehistory.model.CoursePurchase;
 import com.katehistory.model.enums.PaymentStatus;
 import com.katehistory.repository.CoursePurchaseRepository;
+import com.katehistory.service.model.CoursePurchaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

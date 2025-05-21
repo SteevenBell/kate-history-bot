@@ -1,7 +1,8 @@
-package com.katehistory.service.model;
+package com.katehistory.service.model.impl;
 
 import com.katehistory.model.Course;
 import com.katehistory.repository.CourseRepository;
+import com.katehistory.service.model.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

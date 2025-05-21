@@ -1,7 +1,8 @@
-package com.katehistory.service.model;
+package com.katehistory.service.model.impl;
 
 import com.katehistory.model.User;
 import com.katehistory.repository.UserRepository;
+import com.katehistory.service.model.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,8 +1,9 @@
-package com.katehistory.service.model;
+package com.katehistory.service.model.impl;
 
 import com.katehistory.model.LessonBooking;
 import com.katehistory.model.enums.BookingStatus;
 import com.katehistory.repository.LessonBookingRepository;
+import com.katehistory.service.model.LessonBookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

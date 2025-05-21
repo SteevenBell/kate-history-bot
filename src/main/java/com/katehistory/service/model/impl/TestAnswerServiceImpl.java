@@ -1,8 +1,9 @@
-package com.katehistory.service.model;
+package com.katehistory.service.model.impl;
 
 import com.katehistory.model.TestAnswer;
 import com.katehistory.model.enums.AnswerType;
 import com.katehistory.repository.TestAnswerRepository;
+import com.katehistory.service.model.TestAnswerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

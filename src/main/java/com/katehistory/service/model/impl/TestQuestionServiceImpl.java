@@ -1,8 +1,9 @@
-package com.katehistory.service.model;
+package com.katehistory.service.model.impl;
 
 import com.katehistory.model.TestQuestion;
 import com.katehistory.model.enums.QuestionType;
 import com.katehistory.repository.TestQuestionRepository;
+import com.katehistory.service.model.TestQuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class TestQuestionServiceImpl implements TestQuestionService{
+public class TestQuestionServiceImpl implements TestQuestionService {
     private final TestQuestionRepository questionRepository;
 
     @Override
