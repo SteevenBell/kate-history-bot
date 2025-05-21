@@ -1,5 +1,7 @@
 package com.katehistory.telegram;
 
+import com.katehistory.telegram.dispatcher.TelegramUpdateDispatcher;
+import com.katehistory.telegram.model.TelegramUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,29 +13,37 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class TelegramUpdateService {
     private final TelegramBotClient telegramBotClient;
+    private final TelegramUpdateDispatcher dispatcher;
     private final AtomicInteger lastUpdateId = new AtomicInteger(0);
 
 
     public void startPolling() {
         new Thread(() -> {
-            try {
-                while (true) {
-                    Map<String, Object> response = telegramBotClient.getUpdates(lastUpdateId.get());
-                    List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("result");
+            while (true) {
+                try {
+                    List<TelegramUpdate> updates = telegramBotClient.getUpdates(lastUpdateId.get());
 
-                    for (Map<String, Object> update : results) {
-                        int updateId = (int) update.get("update_id");
-                        if (update.containsKey("message")) {
-                            Map<String, Object> message = (Map<String, Object>) update.get("message");
-                            handleIncomingMessage(message);
-                        }
-                        lastUpdateId.set(updateId + 1);
+                    if (updates != null && !updates.isEmpty()) {
+                        // Передаём весь список в диспетчер
+                        dispatcher.dispatch(updates);
+
+                        // Обновляем offset после обработки всех update_id
+                        int latestUpdateId = updates.stream()
+                                .mapToInt(TelegramUpdate::getUpdateId)
+                                .max()
+                                .orElse(lastUpdateId.get());
+
+                        lastUpdateId.set(latestUpdateId + 1);
                     }
 
-                    Thread.sleep(1000); // не спамим
+                } catch (Exception e) {
+                    System.err.println("Ошибка при получении обновлений: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+                try {
+                    Thread.sleep(1000); // Ожидание перед следующим опросом
+                } catch (InterruptedException ignored) {
+                }
             }
         }).start();
     }

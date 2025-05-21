@@ -1,6 +1,7 @@
 package com.katehistory.telegram;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.katehistory.telegram.model.TelegramUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -32,9 +34,20 @@ public class TelegramBotClient {
     }
 
     // Пример метода для получения обновлений (Long Polling)
-    public Map<String, Object> getUpdates(int offset) throws Exception {
+    public List<TelegramUpdate> getUpdates(int offset) throws Exception {
         String url = getApiUrl("getUpdates") + "?offset=" + offset;
-        return sendGet(url);
+
+        Map<String, Object> responseMap = sendGet(url);
+
+        return parseUpdates(responseMap);
+    }
+
+    private List<TelegramUpdate> parseUpdates(Map<String, Object> responseMap) {
+        List<Map<String, Object>> rawUpdates = (List<Map<String, Object>>) responseMap.get("result");
+
+        return rawUpdates.stream()
+                .map(item -> objectMapper.convertValue(item, TelegramUpdate.class))
+                .toList();
     }
 
     // Выполняем GET-запрос
