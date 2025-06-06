@@ -4,24 +4,23 @@ import com.katehistory.telegram.TelegramBotClient;
 import com.katehistory.telegram.handler.TelegramCommandHandler;
 import com.katehistory.telegram.model.TelegramMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class StartCommandHandler implements TelegramCommandHandler {
+@Slf4j
+public class BackCommandHandler implements TelegramCommandHandler {
     private final TelegramBotClient telegramBotClient;
 
     @Override
     public void handle(TelegramMessage message) {
         Long chatId = message.getChat().getId();
-        String firstName = message.getChat().getFirstName();
-
         try {
-            telegramBotClient.sendMessage(chatId, "Добро пожаловать, " + firstName + "! 👩‍🏫");
-
+            // В данном простом примере возвращаем пользователя в главное меню
             telegramBotClient.sendMainMenu(chatId);
         } catch (Exception e) {
-            System.out.println("Ошибка отправки сообщения");
+            log.error("Ошибка при возврате в главное меню для chatId " + chatId, e);
         }
     }
 }

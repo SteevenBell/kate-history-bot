@@ -6,11 +6,11 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TelegramUpdate {
-    @JsonProperty("update_id")
-    private Integer updateId;
-    @JsonProperty("callback_query")
-    private TelegramCallbackQuery callbackQuery;
-
+public class TelegramCallbackQuery {
+    private String id;
+    private TelegramUser from;
     private TelegramMessage message;
+
+    @JsonProperty("data")
+    private String data;
 }
