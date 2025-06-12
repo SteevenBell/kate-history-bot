@@ -3,64 +3,59 @@ package com.katehistory.telegram;
 import com.katehistory.telegram.dispatcher.TelegramUpdateDispatcher;
 import com.katehistory.telegram.model.TelegramUpdate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
-public class TelegramUpdateService {
+@Slf4j
+public class TelegramUpdateService implements ApplicationRunner {
     private final TelegramBotClient telegramBotClient;
     private final TelegramUpdateDispatcher dispatcher;
     private final AtomicInteger lastUpdateId = new AtomicInteger(0);
+    private volatile boolean running = true;
 
-
-    public void startPolling() {
-        new Thread(() -> {
-            while (true) {
-                try {
-                    List<TelegramUpdate> updates = telegramBotClient.getUpdates(lastUpdateId.get());
-
-                    if (updates != null && !updates.isEmpty()) {
-                        // Передаём весь список в диспетчер
-                        dispatcher.dispatch(updates);
-
-                        // Обновляем offset после обработки всех update_id
-                        int latestUpdateId = updates.stream()
-                                .mapToInt(TelegramUpdate::getUpdateId)
-                                .max()
-                                .orElse(lastUpdateId.get());
-
-                        lastUpdateId.set(latestUpdateId + 1);
-                    }
-
-                } catch (Exception e) {
-                    System.err.println("Ошибка при получении обновлений: " + e.getMessage());
-                }
-
-                try {
-                    Thread.sleep(1000); // Ожидание перед следующим опросом
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }).start();
+    @Override
+    public void run(ApplicationArguments args) {
+        Thread pollingThread = new Thread(this::pollUpdates, "telegram-polling-thread");
+        pollingThread.setDaemon(true);
+        pollingThread.start();
+        log.info("Polling Telegram API запущен...");
     }
 
-    private void handleIncomingMessage(Map<String, Object> message) {
-        Map<String, Object> chat = (Map<String, Object>) message.get("chat");
-        String text = (String) message.get("text");
-        Long chatId = ((Number) chat.get("id")).longValue();
+    private void pollUpdates() {
+        while (running) {
+            try {
+                List<TelegramUpdate> updates = telegramBotClient.getUpdates(lastUpdateId.get());
 
-        try {
-            if ("/start".equals(text)) {
-                telegramBotClient.sendMessage(chatId, "Добро пожаловать в бота по истории Беларуси!");
-            } else {
-                telegramBotClient.sendMessage(chatId, "Вы написали: " + text);
+                if (updates != null && !updates.isEmpty()) {
+                    dispatcher.dispatch(updates);
+
+                    int latestUpdateId = updates.stream()
+                            .mapToInt(TelegramUpdate::getUpdateId)
+                            .max()
+                            .orElse(lastUpdateId.get());
+
+                    lastUpdateId.set(latestUpdateId + 1);
+                }
+            } catch (Exception e) {
+                log.error("Ошибка при получении обновлений", e);
             }
-        } catch (Exception e) {
-            System.out.println("Произошла ошибка при отправке сообщения!");
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {
+            }
         }
+    }
+
+    public void stopPolling() {
+        running = false;
+        log.info("Polling Telegram API остановлен.");
     }
 }

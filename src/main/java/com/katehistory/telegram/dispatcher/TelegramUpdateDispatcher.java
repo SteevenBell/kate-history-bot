@@ -1,9 +1,14 @@
+/**
+ * Полностью отрефакторенный диспетчер Telegram-бота
+ * Обрабатывает команды и callback-и
+ * Команды регистрируются через TelegramCommandHandler
+ */
+
 package com.katehistory.telegram.dispatcher;
 
 import com.katehistory.telegram.TelegramBotClient;
+import com.katehistory.telegram.handler.TelegramCallbackHandler;
 import com.katehistory.telegram.handler.TelegramCommandHandler;
-import com.katehistory.telegram.handler.impl.FreeMaterialsCommandHandler;
-import com.katehistory.telegram.handler.impl.StartCommandHandler;
 import com.katehistory.telegram.model.TelegramCallbackQuery;
 import com.katehistory.telegram.model.TelegramMessage;
 import com.katehistory.telegram.model.TelegramUpdate;
@@ -19,53 +24,49 @@ import java.util.Map;
 public class TelegramUpdateDispatcher {
     private final TelegramBotClient telegramBotClient;
     private final Map<String, TelegramCommandHandler> commandHandlers = new HashMap<>();
+    private final TelegramCallbackHandler callbackHandler;
 
     public TelegramUpdateDispatcher(TelegramBotClient telegramBotClient,
-                                    StartCommandHandler startHandler,
-                                    FreeMaterialsCommandHandler freeMaterialsCommandHandler) {
+                                    List<TelegramCommandHandler> handlers,
+                                    TelegramCallbackHandler callbackHandler) {
         this.telegramBotClient = telegramBotClient;
-
-        commandHandlers.put("/start", startHandler);
-        // Регистрируем обработчик для пункта "Бесплатные материалы"
-        commandHandlers.put("Бесплатные материалы", freeMaterialsCommandHandler);
+        this.callbackHandler = callbackHandler;
+        for (TelegramCommandHandler handler : handlers) {
+            commandHandlers.put(handler.getCommand(), handler);
+        }
     }
 
     public void dispatch(List<TelegramUpdate> updates) {
         for (TelegramUpdate update : updates) {
-            // Обрабатываем текстовые сообщения
-            if (update.getMessage() != null && update.getMessage().getText() != null) {
-                TelegramMessage message = update.getMessage();
-                String text = message.getText();
-                Long chatId = message.getChat().getId();
-                TelegramCommandHandler handler = commandHandlers.get(text);
-                if (handler != null) {
-                    handler.handle(message);
-                } else {
-                    try {
-                        telegramBotClient.sendMessage(chatId, "Неизвестная команда: " + text, null);
-                    } catch (Exception e) {
-                        log.error("Ошибка отправки сообщения для неизвестной команды", e);
-                    }
+            try {
+                if (update.getMessage() != null && update.getMessage().getText() != null) {
+                    handleTextMessage(update.getMessage());
+                } else if (update.getCallbackQuery() != null) {
+                    handleCallback(update.getCallbackQuery());
                 }
-            }
-            // Обработка inline callback'ов остается без изменений
-            if (update.getCallbackQuery() != null) {
-                TelegramCallbackQuery callback = update.getCallbackQuery();
-                String callbackData = callback.getData();
-                Long chatId = callback.getMessage().getChat().getId();
-                try {
-                    handleCallback(chatId, callbackData);
-                } catch (Exception e) {
-                    log.error("Ошибка при обработке callback для chatId {}: {}", chatId, e.getMessage());
-                }
+            } catch (Exception e) {
+                log.error("Ошибка обработки обновления {}", update, e);
             }
         }
     }
 
-    private void handleCallback(Long chatId, String callbackData) throws Exception {
-        if (callbackData.equals("back_to_menu")) {
-            telegramBotClient.sendMainMenu(chatId);
+    private void handleTextMessage(TelegramMessage message) {
+        String text = message.getText();
+        Long chatId = message.getChat().getId();
+        TelegramCommandHandler handler = commandHandlers.get(text);
+
+        if (handler != null) {
+            handler.handle(message);
         } else {
+            telegramBotClient.sendMessage(chatId, "Неизвестная команда: " + text);
+        }
+    }
+
+    private void handleCallback(TelegramCallbackQuery callback) {
+        String callbackData = callback.getData();
+        Long chatId = callback.getMessage().getChat().getId();
+
+        if (!callbackHandler.handleCallback(chatId, callbackData)) {
             telegramBotClient.sendMessage(chatId, "Неизвестный callback: " + callbackData);
         }
     }

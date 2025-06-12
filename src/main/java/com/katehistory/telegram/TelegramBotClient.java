@@ -2,7 +2,6 @@ package com.katehistory.telegram;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.katehistory.model.Test;
 import com.katehistory.telegram.keyboard.KeyboardFactory;
 import com.katehistory.telegram.model.TelegramUpdate;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +36,78 @@ public class TelegramBotClient {
     }
 
     // Основной метод для отправки POST-запросов
+    public void sendMessage(Long chatId, String text) {
+        sendMessage(chatId, text, null);
+    }
+
+    public void sendMessage(Long chatId, String text, String replyMarkupJson) {
+        try {
+            Object replyMarkup = (replyMarkupJson != null && !replyMarkupJson.isEmpty())
+                    ? objectMapper.readValue(replyMarkupJson, Object.class)
+                    : null;
+
+            Map<String, Object> body = buildMessageBody(chatId, text, replyMarkup);
+            executePost("sendMessage", body);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка парсинга JSON для reply_markup: {}", replyMarkupJson, e);
+        }
+    }
+
+    public void sendMainMenu(Long chatId) {
+        try {
+            String keyboardJson = keyboardFactory.getMainMenu();
+            sendMessage(chatId, "Выберите действие:", keyboardJson);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка подготовки главного меню", e);
+        }
+    }
+
+    public void sendFreeMaterialsMenu(Long chatId) {
+        try {
+            String keyboardJson = keyboardFactory.getFreeMaterialsMenu();
+            sendMessage(chatId, "Выберите раздел бесплатных материалов:", keyboardJson);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка подготовки меню бесплатных материалов", e);
+        }
+    }
+
+    public void sendTestMenu(Long chatId) {
+        try {
+            String keyboardJson = keyboardFactory.getTestMenu();
+            sendMessage(chatId, "Выберите тест:", keyboardJson);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка подготовки меню тестов", e);
+        }
+    }
+
+    public void sendCoursesMenu(Long chatId) {
+        try {
+            String keyboardJson = keyboardFactory.getCoursesMenu();
+            sendMessage(chatId, "Каталог доступных курсов:", keyboardJson);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка подготовки меню курсов", e);
+        }
+    }
+
+    public void sendGameMenu(Long chatId) {
+        try {
+            String keyboardJson = keyboardFactory.getGameMenu();
+            sendMessage(chatId, "Выбери задание на сегодня:", keyboardJson);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка подготовки меню игровых заданий", e);
+        }
+    }
+
+    private Map<String, Object> buildMessageBody(Long chatId, String text, Object replyMarkup) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("chat_id", chatId);
+        body.put("text", text);
+        if (replyMarkup != null) {
+            body.put("reply_markup", replyMarkup);
+        }
+        return body;
+    }
+
     private void executePost(String method, Map<String, Object> body) {
         String url = getApiUrl(method);
         HttpHeaders headers = new HttpHeaders();
@@ -60,86 +131,9 @@ public class TelegramBotClient {
         }
     }
 
-    public void sendMessage(Long chatId, String text) {
-        sendMessage(chatId, text, null);
-    }
+    public List<TelegramUpdate> getUpdates(int offset) throws Exception {
+        String url = getApiUrl("getUpdates") + "?offset=" + offset + "&timeout=25";
 
-    public void sendMessage(Long chatId, String text, String replyMarkupJson) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("chat_id", chatId);
-        body.put("text", text);
-
-        if (replyMarkupJson != null && !replyMarkupJson.isEmpty()) {
-            try {
-                // Преобразуем JSON-строку клавиатуры в объект, чтобы RestTemplate корректно ее сериализовал
-                // как часть основного JSON-тела запроса
-                body.put("reply_markup", objectMapper.readValue(replyMarkupJson, Object.class));
-            } catch (JsonProcessingException e) {
-                log.error("Ошибка парсинга JSON для reply_markup: {}", replyMarkupJson, e);
-                // Можно либо отправить сообщение без клавиатуры, либо не отправлять вообще
-                // Здесь для примера отправляем без клавиатуры:
-                // body.remove("reply_markup");
-                // Или выбрасываем исключение / возвращаем флаг ошибки
-                return; // или throw new RuntimeException("Ошибка подготовки сообщения", e);
-            }
-        }
-        executePost("sendMessage", body);
-    }
-
-    public void sendMainMenu(Long chatId) {
-        try {
-            String keyboardJson = keyboardFactory.getMainMenu();
-            Map<String, Object> body = new HashMap<>();
-            body.put("chat_id", chatId);
-            body.put("text", "Выберите действие:");
-            body.put("reply_markup", objectMapper.readValue(keyboardJson, Object.class));
-            executePost("sendMessage", body);
-        } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки главного меню для chatId {}: {}", chatId, e.getMessage(), e);
-        }
-    }
-
-    public void sendTestSubjectMenu(Long chatId) {
-        try {
-            String keyboardJson = keyboardFactory.getTestSubjectMenu();
-            Map<String, Object> body = new HashMap<>();
-            body.put("chat_id", chatId);
-            body.put("text", "Выберите предмет:");
-            body.put("reply_markup", objectMapper.readValue(keyboardJson, Object.class));
-            executePost("sendMessage", body);
-        } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки меню выбора предмета для chatId {}: {}", chatId, e.getMessage(), e);
-        }
-    }
-
-    public void sendTestListInline(Long chatId, List<Test> tests) {
-        try {
-            List<Map<String, Object>> testMaps = tests.stream()
-                    .map(test -> {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("title", test.getTitle());
-                        map.put("id", test.getId()); // Убедитесь, что у Test есть getId()
-                        return map;
-                    })
-                    .collect(Collectors.toList());
-
-            String inlineKeyboardJson = keyboardFactory.getTestListInline(testMaps);
-            Map<String, Object> body = new HashMap<>();
-            body.put("chat_id", chatId);
-            body.put("text", "Выберите тест:");
-            body.put("reply_markup", objectMapper.readValue(inlineKeyboardJson, Object.class));
-            executePost("sendMessage", body);
-        } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки списка тестов для chatId {}: {}", chatId, e.getMessage(), e);
-        }
-    }
-
-    // Метод getUpdates можно пока оставить как есть, если он работает корректно.
-    // В будущем его также можно перевести на RestTemplate.
-    public List<TelegramUpdate> getUpdates(int offset) throws Exception { // Оставим throws Exception, т.к. нижестоящие могут его кидать
-        String url = getApiUrl("getUpdates") + "?offset=" + offset + "&timeout=25"; // Добавлен timeout для long polling
-
-        // Для getUpdates предпочтительнее использовать RestTemplate для единообразия
         try {
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
@@ -147,7 +141,7 @@ public class TelegramBotClient {
                 return parseUpdates(responseMap);
             } else {
                 log.error("Ошибка при получении обновлений: статус {}, тело ответа {}", response.getStatusCode(), response.getBody());
-                return List.of(); // Возвращаем пустой список в случае ошибки
+                return List.of();
             }
         } catch (HttpClientErrorException e) {
             log.error("Ошибка клиента при получении обновлений: статус {}, тело ответа: {}",
@@ -155,7 +149,7 @@ public class TelegramBotClient {
             return List.of();
         } catch (Exception e) {
             log.error("Исключение при получении обновлений", e);
-            throw e; // или return List.of(); в зависимости от желаемой стратегии обработки
+            throw e;
         }
     }
 
@@ -175,7 +169,7 @@ public class TelegramBotClient {
                         return objectMapper.convertValue(item, TelegramUpdate.class);
                     } catch (IllegalArgumentException e) {
                         log.error("Ошибка конвертации объекта TelegramUpdate: {}", item, e);
-                        return null; // Пропускаем некорректный update
+                        return null;
                     }
                 })
                 .filter(java.util.Objects::nonNull)

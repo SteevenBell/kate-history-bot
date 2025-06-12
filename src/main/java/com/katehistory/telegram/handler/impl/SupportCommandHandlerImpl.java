@@ -8,25 +8,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class StartCommandHandler implements TelegramCommandHandler {
+public class SupportCommandHandlerImpl implements TelegramCommandHandler {
     private final TelegramBotClient telegramBotClient;
 
     @Override
     public void handle(TelegramMessage message) {
-        Long chatId = message.getChat().getId();
-        String firstName = message.getChat().getFirstName();
-
-        try {
-            telegramBotClient.sendMessage(chatId, "Добро пожаловать, " + firstName + "! 👩‍🏫");
-
-            telegramBotClient.sendMainMenu(chatId);
-        } catch (Exception e) {
-            System.out.println("Ошибка отправки сообщения");
-        }
+        telegramBotClient.sendMessage(message.getChat().getId(), "Если возникли вопросы — напиши сюда: @kate_history_support");
     }
 
     @Override
     public String getCommand() {
-        return "/start";
+        return "Поддержка";
     }
 }
