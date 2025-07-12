@@ -16,6 +16,49 @@ import java.util.Map;
 public class KeyboardFactory {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    public String getCompactMainMenu() throws JsonProcessingException {
+        List<List<String>> keyboard = List.of(
+                List.of("Учиться 📚", "Общение 💬", "Профиль 👤")
+        );
+
+        Map<String, Object> replyMarkup = new HashMap<>();
+        replyMarkup.put("keyboard", keyboard);
+        replyMarkup.put("resize_keyboard", true);
+        replyMarkup.put("one_time_keyboard", false);
+        return objectMapper.writeValueAsString(replyMarkup);
+    }
+
+    // Подменю: Учиться 📚
+    public String getStudyMenu() throws JsonProcessingException {
+        List<List<Map<String, Object>>> keyboard = List.of(
+                List.of(button("Бесплатные материалы", "free_materials")),
+                List.of(button("Пройти тест", "test_menu")),
+                List.of(button("Курсы", "courses_menu")),
+                List.of(button("⬅️ Назад", "back_to_menu"))
+        );
+        return serializeInlineKeyboard(keyboard);
+    }
+
+    // Подменю: Общение 💬
+    public String getCommunicationMenu() throws JsonProcessingException {
+        List<List<Map<String, Object>>> keyboard = List.of(
+                List.of(button("Записаться на занятие", "book_lesson")),
+                List.of(button("Поддержка", "support")),
+                List.of(button("⬅️ Назад", "back_to_menu"))
+        );
+        return serializeInlineKeyboard(keyboard);
+    }
+
+    // Подменю: Профиль 👤
+    public String getProfileMenu() throws JsonProcessingException {
+        List<List<Map<String, Object>>> keyboard = List.of(
+                List.of(button("Мои достижения", "achievements")),
+                List.of(button("Ежедневные задания", "daily_tasks")),
+                List.of(button("⬅️ Назад", "back_to_menu"))
+        );
+        return serializeInlineKeyboard(keyboard);
+    }
+
     /**
      * Главное меню (ReplyKeyboard)
      */

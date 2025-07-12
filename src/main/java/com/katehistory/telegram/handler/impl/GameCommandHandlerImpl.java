@@ -13,7 +13,7 @@ public class GameCommandHandlerImpl implements TelegramCommandHandler {
 
     @Override
     public void handle(TelegramMessage message) {
-        telegramBotClient.sendGameMenu(message.getChat().getId());
+//        telegramBotClient.sendGameMenu(message.getChat().getId());
     }
 
     @Override

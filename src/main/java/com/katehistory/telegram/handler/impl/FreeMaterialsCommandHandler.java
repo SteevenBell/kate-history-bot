@@ -17,7 +17,7 @@ public class FreeMaterialsCommandHandler implements TelegramCommandHandler {
     public void handle(TelegramMessage message) {
         Long chatId = message.getChat().getId();
         try {
-            telegramBotClient.sendFreeMaterialsMenu(message.getChat().getId());
+//            telegramBotClient.sendFreeMaterialsMenu(message.getChat().getId());
         } catch (Exception e) {
             log.error("Ошибка отправки меню бесплатных материалов для chatId: " + chatId, e);
         }

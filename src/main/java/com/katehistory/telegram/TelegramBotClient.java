@@ -24,18 +24,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class TelegramBotClient {
+
     @Value("${telegram.bot.token}")
     private String botToken;
 
-    private final ObjectMapper objectMapper; // Инжектируем ObjectMapper
+    private final ObjectMapper objectMapper;
     private final KeyboardFactory keyboardFactory;
-    private final RestTemplate restTemplate; // Инжектируем RestTemplate
+    private final RestTemplate restTemplate;
 
     private String getApiUrl(String method) {
         return "https://api.telegram.org/bot" + botToken + "/" + method;
     }
 
-    // Основной метод для отправки POST-запросов
     public void sendMessage(Long chatId, String text) {
         sendMessage(chatId, text, null);
     }
@@ -55,48 +55,75 @@ public class TelegramBotClient {
 
     public void sendMainMenu(Long chatId) {
         try {
-            String keyboardJson = keyboardFactory.getMainMenu();
-            sendMessage(chatId, "Выберите действие:", keyboardJson);
+            String keyboardJson = keyboardFactory.getCompactMainMenu();
+            sendMessage(chatId, "Главное меню:", keyboardJson);
         } catch (JsonProcessingException e) {
             log.error("Ошибка подготовки главного меню", e);
         }
     }
 
-    public void sendFreeMaterialsMenu(Long chatId) {
+    public void sendStudyMenu(Long chatId) {
         try {
-            String keyboardJson = keyboardFactory.getFreeMaterialsMenu();
-            sendMessage(chatId, "Выберите раздел бесплатных материалов:", keyboardJson);
+            String keyboardJson = keyboardFactory.getStudyMenu();
+            sendMessage(chatId, "Учебное меню:", keyboardJson);
         } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки меню бесплатных материалов", e);
+            log.error("Ошибка подготовки учебного меню", e);
         }
     }
 
-    public void sendTestMenu(Long chatId) {
+    public void sendCommunicationMenu(Long chatId) {
         try {
-            String keyboardJson = keyboardFactory.getTestMenu();
-            sendMessage(chatId, "Выберите тест:", keyboardJson);
+            String keyboardJson = keyboardFactory.getCommunicationMenu();
+            sendMessage(chatId, "Общение и поддержка:", keyboardJson);
         } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки меню тестов", e);
+            log.error("Ошибка подготовки меню общения", e);
         }
     }
 
-    public void sendCoursesMenu(Long chatId) {
+    public void sendProfileMenu(Long chatId) {
         try {
-            String keyboardJson = keyboardFactory.getCoursesMenu();
-            sendMessage(chatId, "Каталог доступных курсов:", keyboardJson);
+            String keyboardJson = keyboardFactory.getProfileMenu();
+            sendMessage(chatId, "Профиль пользователя:", keyboardJson);
         } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки меню курсов", e);
+            log.error("Ошибка подготовки меню профиля", e);
         }
     }
 
-    public void sendGameMenu(Long chatId) {
-        try {
-            String keyboardJson = keyboardFactory.getGameMenu();
-            sendMessage(chatId, "Выбери задание на сегодня:", keyboardJson);
-        } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки меню игровых заданий", e);
-        }
-    }
+//    public void sendFreeMaterialsMenu(Long chatId) {
+//        try {
+//            String keyboardJson = keyboardFactory.getFreeMaterialsMenu();
+//            sendMessage(chatId, "Выберите раздел бесплатных материалов:", keyboardJson);
+//        } catch (JsonProcessingException e) {
+//            log.error("Ошибка подготовки меню бесплатных материалов", e);
+//        }
+//    }
+//
+//    public void sendTestMenu(Long chatId) {
+//        try {
+//            String keyboardJson = keyboardFactory.getTestMenu();
+//            sendMessage(chatId, "Выберите тест:", keyboardJson);
+//        } catch (JsonProcessingException e) {
+//            log.error("Ошибка подготовки меню тестов", e);
+//        }
+//    }
+//
+//    public void sendCoursesMenu(Long chatId) {
+//        try {
+//            String keyboardJson = keyboardFactory.getCoursesMenu();
+//            sendMessage(chatId, "Каталог доступных курсов:", keyboardJson);
+//        } catch (JsonProcessingException e) {
+//            log.error("Ошибка подготовки меню курсов", e);
+//        }
+//    }
+//
+//    public void sendGameMenu(Long chatId) {
+//        try {
+//            String keyboardJson = keyboardFactory.getGameMenu();
+//            sendMessage(chatId, "Выбери задание на сегодня:", keyboardJson);
+//        } catch (JsonProcessingException e) {
+//            log.error("Ошибка подготовки меню игровых заданий", e);
+//        }
+//    }
 
     private Map<String, Object> buildMessageBody(Long chatId, String text, Object replyMarkup) {
         Map<String, Object> body = new HashMap<>();

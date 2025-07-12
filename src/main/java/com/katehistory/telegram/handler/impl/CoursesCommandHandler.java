@@ -13,7 +13,7 @@ public class CoursesCommandHandler implements TelegramCommandHandler {
 
     @Override
     public void handle(TelegramMessage message) {
-        telegramBotClient.sendCoursesMenu(message.getChat().getId());
+//        telegramBotClient.sendCoursesMenu(message.getChat().getId());
     }
 
     @Override

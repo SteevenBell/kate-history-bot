@@ -10,11 +10,24 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class TelegramCallbackHandlerImpl implements TelegramCallbackHandler {
+
     private final TelegramBotClient telegramBotClient;
 
     @Override
     public boolean handleCallback(Long chatId, String callbackData) {
         return switch (callbackData) {
+            case "study_menu" -> {
+                telegramBotClient.sendStudyMenu(chatId);
+                yield true;
+            }
+            case "communication_menu" -> {
+                telegramBotClient.sendCommunicationMenu(chatId);
+                yield true;
+            }
+            case "profile_menu" -> {
+                telegramBotClient.sendProfileMenu(chatId);
+                yield true;
+            }
             case "free_materials_pdf" -> {
                 telegramBotClient.sendMessage(chatId, "Скоро здесь появятся PDF-конспекты 📖");
                 yield true;

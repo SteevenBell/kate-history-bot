@@ -13,7 +13,7 @@ public class TestCommandHandlerImpl implements TelegramCommandHandler {
 
     @Override
     public void handle(TelegramMessage message) {
-        telegramBotClient.sendTestMenu(message.getChat().getId());
+//        telegramBotClient.sendTestMenu(message.getChat().getId());
     }
 
     @Override
