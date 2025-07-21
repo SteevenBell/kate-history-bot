@@ -2,6 +2,8 @@ package com.katehistory.telegram.keyboard;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.katehistory.telegram.keyboard.enums.BotButtonEnum;
+import com.katehistory.telegram.keyboard.enums.MainMenuButtonEnum;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -18,7 +20,11 @@ public class KeyboardFactory {
 
     public String getCompactMainMenu() throws JsonProcessingException {
         List<List<String>> keyboard = List.of(
-                List.of("Учиться 📚", "Общение 💬", "Профиль 👤")
+                List.of(
+                        MainMenuButtonEnum.STUDY.getText(),
+                        MainMenuButtonEnum.CHAT.getText(),
+                        MainMenuButtonEnum.PROFILE.getText()
+                )
         );
 
         Map<String, Object> replyMarkup = new HashMap<>();
@@ -30,53 +36,49 @@ public class KeyboardFactory {
 
     // Подменю: Учиться 📚
     public String getStudyMenu() throws JsonProcessingException {
-        List<List<Map<String, Object>>> keyboard = List.of(
-                List.of(button("Бесплатные материалы", "free_materials")),
-                List.of(button("Пройти тест", "test_menu")),
-                List.of(button("Курсы", "courses_menu")),
-                List.of(button("⬅️ Назад", "back_to_menu"))
-        );
-        return serializeInlineKeyboard(keyboard);
+        return InlineKeyboardBuilder.create()
+                .button(BotButtonEnum.FREE_MATERIALS).newRow()
+                .button(BotButtonEnum.TEST_MENU).newRow()
+                .button(BotButtonEnum.COURSES_MENU).newRow()
+                .button(BotButtonEnum.BACK).newRow()
+                .build(objectMapper);
     }
 
     // Подменю: Общение 💬
     public String getCommunicationMenu() throws JsonProcessingException {
-        List<List<Map<String, Object>>> keyboard = List.of(
-                List.of(button("Записаться на занятие", "book_lesson")),
-                List.of(button("Поддержка", "support")),
-                List.of(button("⬅️ Назад", "back_to_menu"))
-        );
-        return serializeInlineKeyboard(keyboard);
+        return InlineKeyboardBuilder.create()
+                .button(BotButtonEnum.BOOK_LESSON).newRow()
+                .button(BotButtonEnum.SUPPORT).newRow()
+                .button(BotButtonEnum.BACK)
+                .build(objectMapper);
     }
 
     // Подменю: Профиль 👤
     public String getProfileMenu() throws JsonProcessingException {
-        List<List<Map<String, Object>>> keyboard = List.of(
-                List.of(button("Мои достижения", "achievements")),
-                List.of(button("Ежедневные задания", "daily_tasks")),
-                List.of(button("⬅️ Назад", "back_to_menu"))
-        );
-        return serializeInlineKeyboard(keyboard);
+        return InlineKeyboardBuilder.create()
+                .button(BotButtonEnum.ACHIEVEMENTS).newRow()
+                .button(BotButtonEnum.DAILY_TASKS).newRow()
+                .button(BotButtonEnum.BACK)
+                .build(objectMapper);
     }
 
     /**
      * Главное меню (ReplyKeyboard)
      */
-    public String getMainMenu() throws JsonProcessingException {
-        List<List<String>> keyboard = List.of(
-                List.of("Бесплатные материалы", "Пройти тест"),
-                List.of("Записаться на занятие", "Курсы и оплата"),
-                List.of("Мои достижения", "Поддержка", "Игра / ежедневные задания")
-        );
-
-        Map<String, Object> replyMarkup = new HashMap<>();
-        replyMarkup.put("keyboard", keyboard);
-        replyMarkup.put("resize_keyboard", true);
-        replyMarkup.put("one_time_keyboard", false);
-
-        return objectMapper.writeValueAsString(replyMarkup);
-    }
-
+//    public String getMainMenu() throws JsonProcessingException {
+//        List<List<String>> keyboard = List.of(
+//                List.of("Бесплатные материалы", "Пройти тест"),
+//                List.of("Записаться на занятие", "Курсы и оплата"),
+//                List.of("Мои достижения", "Поддержка", "Игра / ежедневные задания")
+//        );
+//
+//        Map<String, Object> replyMarkup = new HashMap<>();
+//        replyMarkup.put("keyboard", keyboard);
+//        replyMarkup.put("resize_keyboard", true);
+//        replyMarkup.put("one_time_keyboard", false);
+//
+//        return objectMapper.writeValueAsString(replyMarkup);
+//    }
     public String getFreeMaterialsMenu() throws JsonProcessingException {
         List<List<Map<String, Object>>> inlineKeyboard = List.of(
                 List.of(button("Конспекты (PDF)", "free_materials_pdf")),

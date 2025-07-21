@@ -89,14 +89,14 @@ public class TelegramBotClient {
         }
     }
 
-//    public void sendFreeMaterialsMenu(Long chatId) {
-//        try {
-//            String keyboardJson = keyboardFactory.getFreeMaterialsMenu();
-//            sendMessage(chatId, "Выберите раздел бесплатных материалов:", keyboardJson);
-//        } catch (JsonProcessingException e) {
-//            log.error("Ошибка подготовки меню бесплатных материалов", e);
-//        }
-//    }
+    public void sendFreeMaterialsMenu(Long chatId) {
+        try {
+            String keyboardJson = keyboardFactory.getFreeMaterialsMenu();
+            sendMessage(chatId, "Выберите раздел бесплатных материалов:", keyboardJson);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка подготовки меню бесплатных материалов", e);
+        }
+    }
 //
 //    public void sendTestMenu(Long chatId) {
 //        try {

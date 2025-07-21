@@ -1,4 +1,4 @@
-package com.katehistory.telegram.handler.impl;
+package com.katehistory.telegram.handler;
 
 import com.katehistory.telegram.TelegramBotClient;
 import com.katehistory.telegram.handler.TelegramCallbackHandler;
@@ -26,6 +26,10 @@ public class TelegramCallbackHandlerImpl implements TelegramCallbackHandler {
             }
             case "profile_menu" -> {
                 telegramBotClient.sendProfileMenu(chatId);
+                yield true;
+            }
+            case "free_materials" -> {
+                telegramBotClient.sendFreeMaterialsMenu(chatId);
                 yield true;
             }
             case "free_materials_pdf" -> {
