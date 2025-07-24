@@ -1,23 +1,30 @@
 package com.katehistory.telegram.handler;
 
 import com.katehistory.telegram.TelegramBotClient;
-import com.katehistory.telegram.handler.TelegramCallbackHandler;
+import com.katehistory.telegram.keyboard.KeyboardFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class TelegramCallbackHandlerImpl implements TelegramCallbackHandler {
-
+    private final KeyboardFactory keyboardFactory;
     private final TelegramBotClient telegramBotClient;
 
     @Override
-    public boolean handleCallback(Long chatId, String callbackData) {
+    public boolean handleCallback(Long chatId, String callbackData, Long messageId) {
         return switch (callbackData) {
             case "study_menu" -> {
                 telegramBotClient.sendStudyMenu(chatId);
+                yield true;
+            }
+            case "back_study_menu" -> {
+                String keyboard = keyboardFactory.getStudyMenu();
+                telegramBotClient.editMessageText(chatId, messageId,
+                        "Учебное меню:", keyboard);
+
                 yield true;
             }
             case "communication_menu" -> {
@@ -29,19 +36,25 @@ public class TelegramCallbackHandlerImpl implements TelegramCallbackHandler {
                 yield true;
             }
             case "free_materials" -> {
-                telegramBotClient.sendFreeMaterialsMenu(chatId);
+                String keyboard = keyboardFactory.getFreeMaterialsMenu();
+                telegramBotClient.editMessageText(chatId, messageId,
+                        "Выберите раздел бесплатных материалов:", keyboard);
+
                 yield true;
             }
             case "free_materials_pdf" -> {
-                telegramBotClient.sendMessage(chatId, "Скоро здесь появятся PDF-конспекты 📖");
+                telegramBotClient.editMessageText(chatId, messageId,
+                        "Скоро здесь появятся PDF-конспекты 📖", null);
                 yield true;
             }
             case "free_materials_cards" -> {
-                telegramBotClient.sendMessage(chatId, "Карточки с фактами по истории находятся в разработке 🤨");
+                telegramBotClient.editMessageText(chatId, messageId,
+                        "Карточки с фактами по истории находятся в разработке 🤨", null);
                 yield true;
             }
             case "free_materials_articles" -> {
-                telegramBotClient.sendMessage(chatId, "Тематические статьи будут доступны позже ✍️");
+                telegramBotClient.editMessageText(chatId, messageId,
+                        "Тематические статьи будут доступны позже ✍️", null);
                 yield true;
             }
             case "test_topic1" -> {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.katehistory.telegram.keyboard.enums.BotButtonEnum;
 import com.katehistory.telegram.keyboard.enums.MainMenuButtonEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
  * Это основной класс, который будет генерировать JSON для reply_markup
  */
 
+@Slf4j
 @Component
 public class KeyboardFactory {
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -35,13 +37,17 @@ public class KeyboardFactory {
     }
 
     // Подменю: Учиться 📚
-    public String getStudyMenu() throws JsonProcessingException {
-        return InlineKeyboardBuilder.create()
-                .button(BotButtonEnum.FREE_MATERIALS).newRow()
-                .button(BotButtonEnum.TEST_MENU).newRow()
-                .button(BotButtonEnum.COURSES_MENU).newRow()
-                .button(BotButtonEnum.BACK).newRow()
-                .build(objectMapper);
+    public String getStudyMenu() {
+        try {
+            return InlineKeyboardBuilder.create()
+                    .button(BotButtonEnum.FREE_MATERIALS).newRow()
+                    .button(BotButtonEnum.TEST_MENU).newRow()
+                    .button(BotButtonEnum.COURSES_MENU).newRow()
+                    .build(objectMapper);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка при создании клавиатуры Учиться: ", e);
+            return null;
+        }
     }
 
     // Подменю: Общение 💬
@@ -49,7 +55,6 @@ public class KeyboardFactory {
         return InlineKeyboardBuilder.create()
                 .button(BotButtonEnum.BOOK_LESSON).newRow()
                 .button(BotButtonEnum.SUPPORT).newRow()
-                .button(BotButtonEnum.BACK)
                 .build(objectMapper);
     }
 
@@ -58,35 +63,22 @@ public class KeyboardFactory {
         return InlineKeyboardBuilder.create()
                 .button(BotButtonEnum.ACHIEVEMENTS).newRow()
                 .button(BotButtonEnum.DAILY_TASKS).newRow()
-                .button(BotButtonEnum.BACK)
                 .build(objectMapper);
     }
 
-    /**
-     * Главное меню (ReplyKeyboard)
-     */
-//    public String getMainMenu() throws JsonProcessingException {
-//        List<List<String>> keyboard = List.of(
-//                List.of("Бесплатные материалы", "Пройти тест"),
-//                List.of("Записаться на занятие", "Курсы и оплата"),
-//                List.of("Мои достижения", "Поддержка", "Игра / ежедневные задания")
-//        );
-//
-//        Map<String, Object> replyMarkup = new HashMap<>();
-//        replyMarkup.put("keyboard", keyboard);
-//        replyMarkup.put("resize_keyboard", true);
-//        replyMarkup.put("one_time_keyboard", false);
-//
-//        return objectMapper.writeValueAsString(replyMarkup);
-//    }
-    public String getFreeMaterialsMenu() throws JsonProcessingException {
+    public String getFreeMaterialsMenu() {
         List<List<Map<String, Object>>> inlineKeyboard = List.of(
                 List.of(button("Конспекты (PDF)", "free_materials_pdf")),
                 List.of(button("Карточки (текст/фото)", "free_materials_cards")),
                 List.of(button("Тематические статьи", "free_materials_articles")),
-                List.of(button("⬅️ Назад", "back_to_menu"))
+                List.of(button("⬅️ Назад", "back_study_menu"))
         );
-        return serializeInlineKeyboard(inlineKeyboard);
+        try {
+            return serializeInlineKeyboard(inlineKeyboard);
+        } catch (JsonProcessingException e) {
+            log.error("Ошибка при создании клавиатуры getFreeMaterialsMenu: ", e);
+            return null;
+        }
     }
 
     public String getTestMenu() throws JsonProcessingException {

@@ -64,9 +64,10 @@ public class TelegramUpdateDispatcher {
 
     private void handleCallback(TelegramCallbackQuery callback) {
         String callbackData = callback.getData();
+        Long messageId = callback.getMessage().getMessageId();
         Long chatId = callback.getMessage().getChat().getId();
 
-        if (!callbackHandler.handleCallback(chatId, callbackData)) {
+        if (!callbackHandler.handleCallback(chatId, callbackData, messageId)) {
             telegramBotClient.sendMessage(chatId, "Неизвестный callback: " + callbackData);
         }
     }

@@ -8,7 +8,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TelegramMessage {
     @JsonProperty("message_id")
-    private Integer messageId;
+    private Long messageId;
     private TelegramUser from;
     private TelegramChat chat;
     private String text;

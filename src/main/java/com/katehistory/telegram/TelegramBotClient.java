@@ -63,12 +63,8 @@ public class TelegramBotClient {
     }
 
     public void sendStudyMenu(Long chatId) {
-        try {
-            String keyboardJson = keyboardFactory.getStudyMenu();
-            sendMessage(chatId, "Учебное меню:", keyboardJson);
-        } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки учебного меню", e);
-        }
+        String keyboardJson = keyboardFactory.getStudyMenu();
+        sendMessage(chatId, "Учебное меню:", keyboardJson);
     }
 
     public void sendCommunicationMenu(Long chatId) {
@@ -90,13 +86,42 @@ public class TelegramBotClient {
     }
 
     public void sendFreeMaterialsMenu(Long chatId) {
+        String keyboardJson = keyboardFactory.getFreeMaterialsMenu();
+        sendMessage(chatId, "Выберите раздел бесплатных материалов:", keyboardJson);
+    }
+
+    /**
+     * Используйте этот метод для редактирования текстовых и игровых сообщений.
+     * При успехе, если отредактированное сообщение не является встроенным сообщением,
+     * отредактированное сообщение возвращается, в противном случае возвращается True.
+     *
+     * @param chatId
+     * @param messageId
+     * @param newText
+     * @param newKeyboardJson
+     */
+    public void editMessageText(Long chatId, Long messageId, String newText, String newKeyboardJson) {
         try {
-            String keyboardJson = keyboardFactory.getFreeMaterialsMenu();
-            sendMessage(chatId, "Выберите раздел бесплатных материалов:", keyboardJson);
+            Map<String, Object> body = new HashMap<>(Map.of(
+                    "chat_id", chatId,
+                    "message_id", messageId,
+                    "text", newText,
+                    "parse_mode", "HTML"
+            ));
+
+            if (newKeyboardJson != null && !newKeyboardJson.isEmpty()) {
+                Object replyMarkup = objectMapper.readValue(newKeyboardJson, Object.class);
+
+                body.put("reply_markup", replyMarkup);
+            }
+
+            executePost("editMessageText", body);
+
         } catch (JsonProcessingException e) {
-            log.error("Ошибка подготовки меню бесплатных материалов", e);
+            log.error("Ошибка при редактировании сообщения", e);
         }
     }
+
 //
 //    public void sendTestMenu(Long chatId) {
 //        try {
